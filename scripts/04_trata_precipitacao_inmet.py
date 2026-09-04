@@ -2,9 +2,8 @@ from pathlib import Path
 import pandas as pd
 
 
-# =====================================================
 # CONFIGURAÇÃO
-# =====================================================
+# --------------
 
 arquivo_entrada = Path(
     "csv/dados_brutos/chuvas/INMET_NE_PE_A301_RECIFE_01-01-2005_A_31-12-2005.csv"
@@ -15,29 +14,27 @@ pasta_saida = Path(
 )
 
 pasta_saida.mkdir(
-    parents=True,
-    exist_ok=True
+    parents  = True,
+    exist_ok = True
 )
 
 
-# =====================================================
 # LEITURA DO INMET
-# =====================================================
+# -----------------
 
 print("Lendo arquivo INMET...")
 
 df = pd.read_csv(
     arquivo_entrada,
-    sep=";",
-    skiprows=8,
-    engine="python",
-    encoding="latin1"
+    sep      = ";",
+    skiprows = 8,
+    engine   = "python",
+    encoding = "latin1"
 )
 
 
-# =====================================================
-# LIMPEZA INICIAL
-# =====================================================
+# LIMPEZA INI
+# ----------------
 
 # remover colunas totalmente vazias
 df = df.dropna(
@@ -49,9 +46,8 @@ df = df.dropna(
 df.columns = df.columns.str.strip()
 
 
-# =====================================================
 # RENOMEAR CAMPOS
-# =====================================================
+# ---------------
 
 df = df.rename(
     columns={
@@ -62,9 +58,8 @@ df = df.rename(
 )
 
 
-# =====================================================
 # TRATAR PRECIPITAÇÃO
-# =====================================================
+# -------------------
 
 df["precipitacao_mm"] = pd.to_numeric(
     df["precipitacao_mm"],
@@ -79,7 +74,7 @@ df["precipitacao_mm"] = (
 )
 
 
-# Chuvas negativas não existem
+# Chuvas negativas não existem. remover
 df.loc[
     df["precipitacao_mm"] < 0,
     "precipitacao_mm"
@@ -94,9 +89,8 @@ df["precipitacao_mm"] = (
 )
 
 
-# =====================================================
 # CRIAR DATA/HORA
-# =====================================================
+# ---------------
 
 df["data_hora"] = pd.to_datetime(
     df["data"] + " " + df["hora"],
@@ -104,9 +98,8 @@ df["data_hora"] = pd.to_datetime(
 )
 
 
-# =====================================================
 # CHUVA HORÁRIA
-# =====================================================
+# --------------
 
 chuva_horaria = df[
     [
@@ -129,9 +122,8 @@ chuva_horaria.to_csv(
 )
 
 
-# =====================================================
 # CHUVA DIÁRIA
-# =====================================================
+# -------------
 
 chuva_diaria = (
     chuva_horaria
@@ -155,10 +147,8 @@ chuva_diaria.to_csv(
     encoding="utf-8"
 )
 
-
-# =====================================================
 # RELATÓRIO
-# =====================================================
+# -----------
 
 print("\n====================================")
 print("PROCESSAMENTO FINALIZADO")
