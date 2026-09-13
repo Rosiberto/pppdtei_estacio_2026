@@ -39,6 +39,8 @@ bairros_limpo = bairros_limpo.rename(
         "EBAIRRNOME": "bairro"
     }
 )
+
+# códigos comentados usados para visualização e teste, não mais usado
 '''
 print(
     bairros_limpo["bairro"]

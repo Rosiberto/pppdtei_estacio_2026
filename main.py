@@ -61,32 +61,31 @@ class CascadingFailureModel:
         self.energy_states  = {i:1 for i in self.G_energy.nodes()}
         self.telecom_states = {i:1 for i in self.G_telecom.nodes()}
 
-# Dependência: cada telecom depende de um nó elétrico aleatório
+        # Dependência: cada telecom depende de um nó elétrico aleatório
+        # para teste inicial
         '''
         self.dependencies = {t: rand.choice(list(self.G_energy.nodes()))
                              for t in self.G_telecom.nodes()}
         '''
+        
         # a dependência aqui é determinístico
         self.dependencies = { t: t for t in self.G_telecom.nodes() }
 
 
-        # Gero chuva artificial (aleatória)
+        # Geração de chuva artificial (aleatória)
         # Vulnerabilidade estrutural aleatória
         # theta = 0.5 : componente relativamente resistente
         # theta = 1.0 : vulnerabilidade média
         # theta = 1.5 : componente mais vulnerável
-        self.vulnerability_energy = {i: rand.uniform(0.5,1.5)
+        self.vulnerability_energy  = {i: rand.uniform(0.5,1.5)
                                      for i in self.G_energy.nodes()}
         self.vulnerability_telecom = {i: rand.uniform(0.5,1.5)
-                                      for i in self.G_telecom.nodes()}
+                                     for i in self.G_telecom.nodes()}
 
-        # vulnerabilidade 1, isto é, todos são vulneráveis
+        # se vulnerabilidade 1, todos são vulneráveis
         self.vulnerability_energy = { i: 1.0 for i in self.G_energy.nodes() }
 
         self.vulnerability_telecom = { i: 1.0 for i in self.G_telecom.nodes() }
-
-
-
 
         
         self.history = []
@@ -126,6 +125,7 @@ class CascadingFailureModel:
                             self.telecom_states[t_node] = 0
                             
     def apply_structural_failure(self):
+        
         # Energia
         active_energy = [n for n,s in self.energy_states.items() if s==1]
         G_sub = self.G_energy.subgraph(active_energy)
@@ -149,13 +149,13 @@ class CascadingFailureModel:
         active_nodes = sum(self.energy_states.values()) + sum(self.telecom_states.values())
         return active_nodes / total_nodes
 
-    
+    # simulação fixa com 10 iterações
     '''
     def simulate(self, T=10, rain_series=None):
     '''
     def simulate(self, rain_series):    
 
-        # comentado para usar os dados reais. 
+        # códigos comentados para usar os dados reais. se for usar dados fictícios comentar os ativos e retirar os comentários dos inativos
         '''
         if rain_series is None:
             rain_series = np.random.uniform(0,50,T)
@@ -168,7 +168,9 @@ class CascadingFailureModel:
         
         return self.history
         '''
+        
         T = len(rain_series)
+        
         '''
         for rain in rain_series:
 
@@ -180,6 +182,7 @@ class CascadingFailureModel:
                     self.resilience_metric()
                 )
         '''
+        
         for t in range(T):
 
             # Chuva
@@ -222,8 +225,7 @@ model = CascadingFailureModel(
     n_energy        = 40,
     n_telecom       = 40,
     alpha           = 0.08, # quanto > alpha, > a probabilidade de falha provocada pela chuva
-    beta            = 0.6,  # se o componente elétrico do qual um componente de telecom depende falhar, 
-                            # existe 60% de probabilidade do componente de telecom falhar também.
+    beta            = 0.6,  # se o componente elétrico do qual um componente de telecom depende falhar, existe 60% de probabilidade do componente de telecom falhar também.
     dependency_type = "partial"  # ou "total"
 )
 

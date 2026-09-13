@@ -1,6 +1,7 @@
 import pandas as pd
 import unidecode
 
+# organização e formatação dos nomes
 def normalizar_nome(nome):
     return (
         unidecode.unidecode(str(nome))
@@ -39,13 +40,13 @@ recife = recife.rename(
     }
 )
 
-# criar chave
+# criar chave única
 recife["bairro_key"] = (
     recife["bairro"]
     .apply(normalizar_nome)
 )
 
-# salvar
+# salvar arquivo
 recife.to_csv(
     "csv/dados_tratados/populacao_bairros_recife.csv",
     index=False
@@ -54,6 +55,7 @@ recife.to_csv(
 print(recife.head())
 print("Total bairros:", len(recife))
 
+# para visualização, não mais usado
 '''
 print(
     recife[
