@@ -81,10 +81,10 @@ class InterdependentNetwork:
     
     def __init__(self, n_energy=100, n_telecom=100,  # AUMENTADO para 100
                  topology="scale_free", bairros=None):
-        self.n_energy = n_energy
+        self.n_energy  = n_energy
         self.n_telecom = n_telecom
-        self.topology = topology
-        self.bairros = bairros
+        self.topology  = topology
+        self.bairros   = bairros
         
         self.G_E = self._build_topology(n_energy)
         self.G_T = self._build_topology(n_telecom)
@@ -123,15 +123,15 @@ class InterdependentNetwork:
             bairros_wgs84 = bairros_wgs84.to_crs(epsg=4326)
         
         bairros_list = bairros_wgs84["bairro"].tolist()
-        centroids = list(bairros_wgs84.geometry.centroid)
+        centroids    = list(bairros_wgs84.geometry.centroid)
         
         for G in [self.G_E, self.G_T]:
             for n in G.nodes():
-                idx = np.random.randint(0, len(bairros_list))
+                idx                  = np.random.randint(0, len(bairros_list))
                 G.nodes[n]["bairro"] = bairros_list[idx]
-                c = centroids[idx]
-                G.nodes[n]["lon"] = c.x + np.random.uniform(-0.005, 0.005)
-                G.nodes[n]["lat"] = c.y + np.random.uniform(-0.005, 0.005)
+                c                    = centroids[idx]
+                G.nodes[n]["lon"]    = c.x + np.random.uniform(-0.005, 0.005)
+                G.nodes[n]["lat"]    = c.y + np.random.uniform(-0.005, 0.005)
     
     def _build_coupling(self):
         """
@@ -149,7 +149,7 @@ class InterdependentNetwork:
             for e in energy_nodes:
                 e_lon = self.G_E.nodes[e]["lon"]
                 e_lat = self.G_E.nodes[e]["lat"]
-                d = np.sqrt((t_lon - e_lon)**2 + (t_lat - e_lat)**2)
+                d     = np.sqrt((t_lon - e_lon)**2 + (t_lat - e_lat)**2)
                 dists.append((e, d))
             
             # AUMENTADO de 70% para 85% acoplamento espacial
@@ -176,9 +176,9 @@ def calcular_pc(G):
     degrees = [d for _, d in G.degree()]
     if len(degrees) == 0:
         return 1.0
-    k_mean = np.mean(degrees)
+    k_mean  = np.mean(degrees)
     k2_mean = np.mean(np.array(degrees) ** 2)
-    denom = k2_mean - k_mean
+    denom   = k2_mean - k_mean
     if denom <= 0:
         return 1.0
     return k_mean / denom
@@ -193,10 +193,10 @@ class CascadingFailureModel:
     
     def __init__(self, network, alpha=0.15, beta=0.85):  # AUMENTADOS
         self.network = network
-        self.alpha = alpha
-        self.beta = beta
+        self.alpha   = alpha
+        self.beta    = beta
         self.history = []
-        self.S_t = []
+        self.S_t     = []
     
     def reset(self):
         self.network.reset()
@@ -272,15 +272,15 @@ class CascadingFailureModel:
         Propagação por interdependência.
         CORREÇÃO: Agora propaga em ambas as direções (E→T e T→E).
         """
-        changed = True
-        iterations = 0
+        changed        = True
+        iterations     = 0
         max_iterations = 50  # Limita para evitar loop infinito
         
         while changed and iterations < max_iterations:
-            changed = False
+            changed     = False
             iterations += 1
             
-            # Energia → Telecom
+            # Energia -> Telecom
             for t_node, e_node in self.network.dependencies.items():
                 if (self.network.state_T[t_node] == 1 and 
                     self.network.state_E[e_node] == 0):
@@ -321,7 +321,7 @@ class CascadingFailureModel:
         # Telecom
         active_T = [n for n, s in self.network.state_T.items() if s == 1]
         if len(active_T) > 0:
-            sub_T = self.network.G_T.subgraph(active_T)
+            sub_T      = self.network.G_T.subgraph(active_T)
             components = list(nx.connected_components(sub_T))
             if components:
                 lcc_T = max(components, key=len)
@@ -412,13 +412,13 @@ class CascadingFailureModel:
         
         pc_E = calcular_pc(self.network.G_E)
         pc_T = calcular_pc(self.network.G_T)
-        pc = (pc_E + pc_T) / 2
+        pc   = (pc_E + pc_T) / 2
         
-        T = len(self.history) - 1
+        T    = len(self.history) - 1
         
-        S_array = np.array(self.S_t)
+        S_array    = np.array(self.S_t)
         integral_S = trapz_compat(S_array, dx=1.0)
-        mean_S = integral_S / max(1, len(S_array) - 1)
+        mean_S     = integral_S / max(1, len(S_array) - 1)
         
         p_final = final_metrics["p"]
         if pc < 1.0:
@@ -453,10 +453,10 @@ def run_monte_carlo(n_runs=100, scenario="random",
     
     for i in range(n_runs):
         net = InterdependentNetwork(
-            n_energy=n_energy, 
-            n_telecom=n_telecom,
-            topology="scale_free",
-            bairros=bairros
+            n_energy  = n_energy, 
+            n_telecom = n_telecom,
+            topology  = "scale_free",
+            bairros   = bairros
         )
         
         model = CascadingFailureModel(net, alpha=alpha, beta=beta)
@@ -474,7 +474,7 @@ def run_monte_carlo(n_runs=100, scenario="random",
 def aggregate_results(results):
     """Agrega resultados."""
     metrics = ["R_E", "R_T", "T", "IRU-P"]
-    agg = {}
+    agg     = {}
     
     for m in metrics:
         values = [r[m] for r in results]
@@ -492,17 +492,17 @@ def aggregate_results(results):
 
 def statistical_comparison(results_dict):
     """Teste t de Student."""
-    metrics = ["R_E", "R_T", "T", "IRU-P"]
+    metrics     = ["R_E", "R_T", "T", "IRU-P"]
     comparisons = []
     
-    scenarios = list(results_dict.keys())
+    scenarios   = list(results_dict.keys())
     
     for m in metrics:
         for i in range(len(scenarios)):
             for j in range(i+1, len(scenarios)):
                 s1, s2 = scenarios[i], scenarios[j]
-                v1 = [r[m] for r in results_dict[s1]]
-                v2 = [r[m] for r in results_dict[s2]]
+                v1     = [r[m] for r in results_dict[s1]]
+                v2     = [r[m] for r in results_dict[s2]]
                 
                 t_stat, p_value = stats.ttest_ind(v1, v2)
                 
@@ -530,12 +530,12 @@ def sensitivity_analysis(beta_values, n_runs=50, scenario="geospatial",
     for beta in beta_values:
         print(f"  beta = {beta:.2f}...", end=" ")
         res = run_monte_carlo(
-            n_runs=n_runs,
-            scenario=scenario,
-            n_energy=n_energy,
-            n_telecom=n_telecom,
-            beta=beta,
-            bairros=bairros
+            n_runs    = n_runs,
+            scenario  = scenario,
+            n_energy  = n_energy,
+            n_telecom = n_telecom,
+            beta      = beta,
+            bairros   = bairros
         )
         agg = aggregate_results(res)
         results.append({
@@ -564,7 +564,7 @@ def main():
     print(f"  Registros de chuva: {len(chuva)}")
     
     chuva_diaria = chuva.groupby(chuva["data_hora"].dt.date)["precipitacao_mm"].sum()
-    dia_critico = chuva_diaria.idxmax()
+    dia_critico  = chuva_diaria.idxmax()
     chuva_evento = chuva[
         chuva["data_hora"].dt.date == dia_critico
     ]["precipitacao_mm"].values
